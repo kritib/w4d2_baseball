@@ -30,4 +30,48 @@ class Person < ActiveRecord::Base
       .group("Master.playerID")
       .order("career_length DESC")
   end
+
+  def self.most_players_managed
+    self
+      .select("Master.*, COUNT(DISTINCT(managed.playerID)) AS num_players_managed")
+      .joins(:managed_teams => :playerships)
+      .joins("JOIN Master AS managed ON managed.playerID = Appearances.playerID")
+      .group("Master.managerID")
+      .order("num_players_managed DESC")
+      .first
+  end
+
+  def self.managed_and_played
+    self
+      .where("playerID != ''")
+      .where("managerID != ''")
+  end
+
+  def self.most_team_transfers_in_a_year
+    self
+      .select
+      .join
+      .group([:teams, :person])
+  end
+
+  def self.only_played_in_one_team
+    players = self
+      .select("Master.*, COUNT(DISTINCT(Teams.teamID)) AS num_teams")
+      .joins(:teams)
+      .group(:playerID)
+      .select {|player| player.num_teams == 1}
+  end
+
+  def self.played_for_num_years(num_years)
+    self
+      .select("Master.*, (MAX(yearID) - MIN(yearID)) AS career_length")
+      .joins(:playerships)
+      .group("Master.playerID")
+      .select { |player| player.career_length >= num_years }
+  end
+
 end
+
+
+
+
