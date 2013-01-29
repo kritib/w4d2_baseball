@@ -1,4 +1,4 @@
-class Pitching < ActiveRecord::Base
+class PitchingLine < ActiveRecord::Base
   set_table_name :Pitching
 
   belongs_to :pitcher, :class_name => 'Person',
