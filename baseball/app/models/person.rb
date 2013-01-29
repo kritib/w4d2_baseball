@@ -12,4 +12,14 @@ class Person < ActiveRecord::Base
   has_many :managed_teams, :source => :team, :through => :managerships
 
   has_many :salaries, :foreign_key => "playerID", :primary_key => "playerID"
+
+  def self.good_batters(avg = 0.3)
+    players = self
+      .select("Master.*, (SUM(Batting.H)/SUM(Batting.AB)) AS batting_avg")
+      .joins(:batting_lines)
+      .where("AB >= 100")
+      .group("Batting.playerID")
+
+    players.select { |player| player.batting_avg > avg }
+  end
 end
