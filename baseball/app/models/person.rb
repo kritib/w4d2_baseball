@@ -22,4 +22,12 @@ class Person < ActiveRecord::Base
 
     players.select { |player| player.batting_avg > avg }
   end
+
+  def self.most_experienced
+    self
+      .select("Master.*, (MAX(yearID) - MIN(yearID)) AS career_length")
+      .joins(:playerships)
+      .group("Master.playerID")
+      .order("career_length DESC")
+  end
 end
