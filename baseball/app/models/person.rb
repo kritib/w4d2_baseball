@@ -19,8 +19,7 @@ class Person < ActiveRecord::Base
       .joins(:batting_lines)
       .where("AB >= 100")
       .group("Batting.playerID")
-
-    players.select { |player| player.batting_avg > avg }
+      .having("batting_avg > ?", avg)
   end
 
   def self.most_experienced
@@ -49,9 +48,11 @@ class Person < ActiveRecord::Base
 
   def self.most_team_transfers_in_a_year
     self
-      .select
-      .join
-      .group([:teams, :person])
+      .select("Master.*, Teams.yearID AS year, COUNT(DISTINCT(Teams.teamID)) AS num_teams")
+      .joins(:teams)
+      .group("playerID, Teams.yearID")
+      .order("num_teams DESC")
+      .limit(10)
   end
 
   def self.only_played_in_one_team
@@ -59,7 +60,7 @@ class Person < ActiveRecord::Base
       .select("Master.*, COUNT(DISTINCT(Teams.teamID)) AS num_teams")
       .joins(:teams)
       .group(:playerID)
-      .select {|player| player.num_teams == 1}
+      .having("num_teams == ?", 1)
   end
 
   def self.played_for_num_years(num_years)
@@ -67,7 +68,16 @@ class Person < ActiveRecord::Base
       .select("Master.*, (MAX(yearID) - MIN(yearID)) AS career_length")
       .joins(:playerships)
       .group("Master.playerID")
-      .select { |player| player.career_length >= num_years }
+      .having("career_length >= ?", num_years)
+  end
+
+  def self.most_teams_in_career(n = 1)
+    self
+      .select("Master.*, COUNT(DISTINCT(Teams.teamID)) AS num_teams")
+      .joins(:teams)
+      .group(:playerID)
+      .order("num_teams DESC")
+      .limit(n)
   end
 
 end
