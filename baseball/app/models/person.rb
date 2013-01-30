@@ -28,6 +28,7 @@ class Person < ActiveRecord::Base
       .joins(:playerships)
       .group("Master.playerID")
       .order("career_length DESC")
+      .first
   end
 
   def self.most_players_managed
